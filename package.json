@@ -1,0 +1,9 @@
+{
+  "name": "frontend-ai-capstone",
+  "version": "1.0.0",
+  "description": "FlyRank Frontend AI Engineering Internship Capstone",
+  "scripts": {
+    "dev": "npx -y live-server --port=3000 --no-browser"
+  },
+  "private": true
+}
