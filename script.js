@@ -1,17 +1,17 @@
 /* ═══════════════════════════════════════════════════════════════
-   Settings Form — Validation & Interactivity
+   Settings Form — Robust Validation & Accessible Interactivity
    ═══════════════════════════════════════════════════════════════ */
 
 (function () {
   'use strict';
 
-  // ─── DOM References ───────────────────────────────────────────
+  // ─── DOM Elements ──────────────────────────────────────────────
   const form           = document.getElementById('settings-form');
   const btnSave        = document.getElementById('btn-save');
   const btnReset       = document.getElementById('btn-reset');
   const toastContainer = document.getElementById('toast-container');
 
-  // Fields
+  // Input Fields
   const fullnameInput  = document.getElementById('fullname');
   const emailInput     = document.getElementById('email');
   const usernameInput  = document.getElementById('username');
@@ -21,90 +21,116 @@
   const currentPwInput = document.getElementById('current-password');
   const newPwInput     = document.getElementById('new-password');
   const confirmPwInput = document.getElementById('confirm-password');
+
+  // Strength Meter & Indicators
+  const strengthMeter  = document.getElementById('strength-meter');
   const strengthBar    = document.getElementById('strength-bar');
-  const strengthText   = document.getElementById('strength-text');
+  const strengthText   = document.getElementById('password-strength-status');
 
-  // ─── Validators ───────────────────────────────────────────────
+  // ─── Validation Rules & Edge Cases ────────────────────────────
+  const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/;
+  const PHONE_REGEX = /^\+?[\d\s\-()]{7,15}$/;
+
   const validators = {
-    fullname(value) {
-      if (!value.trim()) return 'Full name is required';
-      if (value.trim().length < 2) return 'Must be at least 2 characters';
-      if (value.trim().length > 50) return 'Must be under 50 characters';
+    fullname(val) {
+      const trimmed = val.trim();
+      if (!trimmed) return 'Full name is required';
+      if (trimmed.length < 2) return 'Full name must be at least 2 characters';
+      if (trimmed.length > 50) return 'Full name must be under 50 characters';
       return '';
     },
 
-    email(value) {
-      if (!value.trim()) return 'Email is required';
-      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!re.test(value)) return 'Enter a valid email address';
+    email(val) {
+      const trimmed = val.trim();
+      if (!trimmed) return 'Email address is required';
+      if (!EMAIL_REGEX.test(trimmed)) return 'Please enter a valid email address (e.g. user@domain.com)';
       return '';
     },
 
-    username(value) {
-      if (!value.trim()) return 'Username is required';
-      if (value.length < 3) return 'Must be at least 3 characters';
-      if (value.length > 20) return 'Must be under 20 characters';
-      if (!/^[a-zA-Z0-9_]+$/.test(value)) return 'Only letters, numbers, and underscores';
+    username(val) {
+      const trimmed = val.trim();
+      if (!trimmed) return 'Username is required';
+      if (trimmed.length < 3) return 'Username must be at least 3 characters';
+      if (trimmed.length > 20) return 'Username must be 20 characters or fewer';
+      if (!USERNAME_REGEX.test(trimmed)) return 'Username can only contain letters, numbers, and underscores';
       return '';
     },
 
-    phone(value) {
-      if (!value.trim()) return ''; // optional
-      if (!/^\+?[\d\s\-()]{7,15}$/.test(value)) return 'Enter a valid phone number';
+    phone(val) {
+      const trimmed = val.trim();
+      if (!trimmed) return ''; // Optional field
+      if (!PHONE_REGEX.test(trimmed)) return 'Please enter a valid phone number (e.g. +1 555-0199)';
       return '';
     },
 
-    'current-password'(value) {
-      if (!value) return 'Current password is required';
-      if (value.length < 8) return 'Must be at least 8 characters';
+    'current-password'(val) {
+      if (!val) return 'Current password is required';
+      if (val.length < 8) return 'Password must be at least 8 characters';
       return '';
     },
 
-    'new-password'(value) {
-      if (!value) return 'New password is required';
-      if (value.length < 8) return 'Must be at least 8 characters';
+    'new-password'(val) {
+      if (!val) return 'New password is required';
+      if (val.length < 8) return 'New password must be at least 8 characters';
+      if (currentPwInput.value && val === currentPwInput.value) {
+        return 'New password must be different from current password';
+      }
       return '';
     },
 
-    'confirm-password'(value) {
-      if (!value) return 'Please confirm your password';
-      if (value !== newPwInput.value) return 'Passwords do not match';
+    'confirm-password'(val) {
+      if (!val) return 'Please confirm your new password';
+      if (val !== newPwInput.value) return 'Passwords do not match';
       return '';
     }
   };
 
-  // ─── Validate a single field ──────────────────────────────────
+  // ─── Single Field Validation Execution ─────────────────────────
   function validateField(input) {
-    const name    = input.name || input.id;
-    const group   = input.closest('.form-group');
+    const name = input.name || input.id;
+    const group = input.closest('.form-group');
     const errorEl = document.getElementById(`${name}-error`);
-    const validate = validators[name];
+    const validator = validators[name];
 
-    if (!validate || !group) return true;
+    if (!validator || !group) return true;
 
-    const error = validate(input.value);
+    const errorMessage = validator(input.value);
 
-    group.classList.remove('is-valid', 'is-invalid');
-
-    if (error) {
+    if (errorMessage) {
+      group.classList.remove('is-valid');
       group.classList.add('is-invalid');
-      if (errorEl) errorEl.textContent = error;
+      input.setAttribute('aria-invalid', 'true');
+      if (errorEl) errorEl.textContent = errorMessage;
       return false;
     }
 
-    // Only mark valid if field is not empty (skip for optional empty fields)
-    if (input.value.trim()) {
-      group.classList.add('is-valid');
-    }
+    group.classList.remove('is-invalid');
+    input.setAttribute('aria-invalid', 'false');
     if (errorEl) errorEl.textContent = '';
+
+    // Mark valid if input has non-whitespace value
+    if (input.value.trim().length > 0) {
+      group.classList.add('is-valid');
+    } else {
+      group.classList.remove('is-valid');
+    }
+
     return true;
   }
 
-  // ─── Real-time validation on blur + input ─────────────────────
-  const fieldInputs = [fullnameInput, emailInput, usernameInput, phoneInput,
-                       currentPwInput, newPwInput, confirmPwInput];
+  // ─── Input Event Binding (Blur & Real-time) ───────────────────
+  const fields = [
+    fullnameInput,
+    emailInput,
+    usernameInput,
+    phoneInput,
+    currentPwInput,
+    newPwInput,
+    confirmPwInput
+  ];
 
-  fieldInputs.forEach(input => {
+  fields.forEach(input => {
     let touched = false;
 
     input.addEventListener('blur', () => {
@@ -113,72 +139,102 @@
     });
 
     input.addEventListener('input', () => {
-      if (touched) validateField(input);
+      if (touched) {
+        validateField(input);
+      }
+      // Dependent validation: re-check confirm password when new password changes
+      if (input === newPwInput && confirmPwInput.closest('.form-group').classList.contains('is-invalid')) {
+        validateField(confirmPwInput);
+      }
+    });
+
+    input.addEventListener('paste', () => {
+      setTimeout(() => validateField(input), 0);
     });
   });
 
-  // ─── Bio character counter ────────────────────────────────────
-  bioInput.addEventListener('input', () => {
+  // ─── Character Count for Bio ──────────────────────────────────
+  function updateBioCount() {
     bioCount.textContent = bioInput.value.length;
-  });
+  }
+  bioInput.addEventListener('input', updateBioCount);
+  bioInput.addEventListener('paste', () => setTimeout(updateBioCount, 0));
 
-  // ─── Password strength meter ─────────────────────────────────
-  function getPasswordStrength(password) {
+  // ─── Password Strength Calculation ────────────────────────────
+  function calculatePasswordStrength(password) {
+    if (!password) return 0;
     let score = 0;
-    if (password.length >= 8)           score++;
-    if (/[A-Z]/.test(password))         score++;
-    if (/[0-9]/.test(password))         score++;
-    if (/[^A-Za-z0-9]/.test(password))  score++;
-    return score; // 0-4
+    if (password.length >= 8) score++;
+    if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+    return score; // 0 to 4
   }
 
-  const strengthLabels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
-  const strengthColors = ['', 'var(--error)', 'var(--warning)', 'var(--blue)', 'var(--success)'];
+  const STRENGTH_LABELS = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+  const STRENGTH_COLORS = ['', 'var(--error)', 'var(--warning)', 'var(--blue)', 'var(--success)'];
 
   newPwInput.addEventListener('input', () => {
-    const level = getPasswordStrength(newPwInput.value);
-    strengthBar.setAttribute('data-level', newPwInput.value ? level : 0);
+    const val = newPwInput.value;
+    const score = calculatePasswordStrength(val);
 
-    if (newPwInput.value) {
-      strengthText.textContent = strengthLabels[level] || '';
-      strengthText.style.color = strengthColors[level] || '';
+    if (val) {
+      strengthMeter.setAttribute('aria-valuenow', score);
+      strengthBar.setAttribute('data-level', score);
+      strengthText.textContent = `Strength: ${STRENGTH_LABELS[score]}`;
+      strengthText.style.color = STRENGTH_COLORS[score];
     } else {
-      strengthText.textContent = '';
+      strengthMeter.setAttribute('aria-valuenow', 0);
       strengthBar.removeAttribute('data-level');
+      strengthText.textContent = '';
     }
   });
 
-  // ─── Password visibility toggles ─────────────────────────────
-  document.querySelectorAll('.toggle-password').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const target = document.getElementById(btn.dataset.target);
-      const isPassword = target.type === 'password';
-      target.type = isPassword ? 'text' : 'password';
-      btn.classList.toggle('is-visible', isPassword);
+  // ─── Password Show/Hide Toggle ─────────────────────────────────
+  document.querySelectorAll('.toggle-password').forEach(button => {
+    button.addEventListener('click', () => {
+      const targetId = button.dataset.target;
+      const targetInput = document.getElementById(targetId);
+      if (!targetInput) return;
+
+      const isPassword = targetInput.type === 'password';
+      targetInput.type = isPassword ? 'text' : 'password';
+
+      button.classList.toggle('is-visible', isPassword);
+      const fieldName = targetInput.previousElementSibling
+        ? targetId.replace('-', ' ')
+        : 'password';
+      button.setAttribute('aria-label', isPassword ? `Hide ${fieldName}` : `Show ${fieldName}`);
     });
   });
 
-  // ─── Form submission ─────────────────────────────────────────
+  // ─── Form Submission Handling ─────────────────────────────────
   form.addEventListener('submit', (e) => {
     e.preventDefault();
 
-    // Validate all fields
-    let allValid = true;
-    fieldInputs.forEach(input => {
-      if (!validateField(input)) allValid = false;
+    let isFormValid = true;
+    let firstInvalidInput = null;
+
+    fields.forEach(input => {
+      const valid = validateField(input);
+      if (!valid) {
+        isFormValid = false;
+        if (!firstInvalidInput) {
+          firstInvalidInput = input;
+        }
+      }
     });
 
-    if (!allValid) {
-      // Scroll to first error
-      const firstError = form.querySelector('.is-invalid');
-      if (firstError) {
-        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (!isFormValid) {
+      if (firstInvalidInput) {
+        firstInvalidInput.focus();
+        firstInvalidInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
-      showToast('Please fix the errors above.', 'error');
+      showToast('Please correct the highlighted errors before saving.', 'error');
       return;
     }
 
-    // Simulate saving
+    // Simulate submission state safely
     btnSave.classList.add('is-loading');
     btnSave.disabled = true;
 
@@ -189,46 +245,65 @@
     }, 1200);
   });
 
-  // ─── Reset button ────────────────────────────────────────────
+  // ─── Form Reset ───────────────────────────────────────────────
   btnReset.addEventListener('click', () => {
     form.reset();
-    bioCount.textContent = '0';
+
+    // Reset bio count & password strength
+    updateBioCount();
+    strengthMeter.setAttribute('aria-valuenow', 0);
     strengthBar.removeAttribute('data-level');
     strengthText.textContent = '';
 
-    // Clear all validation states
-    form.querySelectorAll('.form-group').forEach(group => {
+    // Clear validation styling and error text
+    document.querySelectorAll('.form-group').forEach(group => {
       group.classList.remove('is-valid', 'is-invalid');
     });
-    form.querySelectorAll('.helper-text').forEach(el => {
-      el.textContent = '';
+
+    fields.forEach(input => {
+      input.removeAttribute('aria-invalid');
     });
 
-    // Reset password toggles
-    document.querySelectorAll('.toggle-password').forEach(btn => {
-      btn.classList.remove('is-visible');
-      const target = document.getElementById(btn.dataset.target);
-      target.type = 'password';
+    document.querySelectorAll('.helper-text').forEach(span => {
+      span.textContent = '';
     });
 
-    showToast('Form has been reset.', 'success');
+    // Reset password visibility buttons
+    document.querySelectorAll('.toggle-password').forEach(button => {
+      button.classList.remove('is-visible');
+      const targetId = button.dataset.target;
+      const targetInput = document.getElementById(targetId);
+      if (targetInput) {
+        targetInput.type = 'password';
+      }
+      button.setAttribute('aria-label', `Show ${targetId.replace('-', ' ')}`);
+    });
+
+    showToast('Form has been reset to defaults.', 'success');
   });
 
-  // ─── Toast notification helper ────────────────────────────────
+  // ─── XSS-Safe Toast Notification Handler ────────────────────────
   function showToast(message, type = 'success') {
     const toast = document.createElement('div');
     toast.className = `toast toast--${type}`;
 
-    const icon = type === 'success' ? '✓' : '✕';
-    toast.innerHTML = `<span style="font-weight:700;font-size:1rem;">${icon}</span> ${message}`;
+    const iconSpan = document.createElement('span');
+    iconSpan.style.fontWeight = '700';
+    iconSpan.style.fontSize = '1rem';
+    iconSpan.setAttribute('aria-hidden', 'true');
+    iconSpan.textContent = type === 'success' ? '✓' : '✕';
 
+    const msgSpan = document.createElement('span');
+    msgSpan.textContent = message;
+
+    toast.appendChild(iconSpan);
+    toast.appendChild(msgSpan);
     toastContainer.appendChild(toast);
 
-    // Auto-dismiss
     setTimeout(() => {
       toast.classList.add('is-leaving');
       toast.addEventListener('animationend', () => toast.remove());
-    }, 3000);
+    }, 3500);
   }
 
 })();
