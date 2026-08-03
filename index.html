@@ -3,49 +3,224 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FlyRank Internship</title>
+  <title>Settings — FlyRank Capstone</title>
+  <meta name="description" content="User settings page with profile, notification, and password management with real-time form validation.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+  <!-- Ambient background blobs -->
+  <div class="bg-blob bg-blob--1" aria-hidden="true"></div>
+  <div class="bg-blob bg-blob--2" aria-hidden="true"></div>
+
   <header>
-    <h1>FlyRank Frontend AI Engineering Internship</h1>
-    <p>Building modern web experiences with HTML, CSS, JavaScript, and AI-assisted development.</p>
+    <div class="header-inner">
+      <div class="logo" id="logo">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="url(#logo-grad)"/>
+          <path d="M10 22V10h5.5a4 4 0 010 8H13v4h-3zm3-7h2.5a1.5 1.5 0 000-3H13v3z" fill="#fff"/>
+          <defs><linearGradient id="logo-grad" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
+        </svg>
+        <span>FlyRank</span>
+      </div>
+      <nav>
+        <a href="#" class="nav-link active" id="nav-settings">Settings</a>
+      </nav>
+    </div>
   </header>
 
   <main>
-    <section>
-      <h2>About This Project</h2>
-      <p>
-        This repository is part of my FlyRank Frontend AI Engineering Internship capstone.
-        It is a starting point for learning frontend fundamentals and using AI tools to
-        write clean, maintainable code.
-      </p>
-    </section>
+    <div class="page-title-row">
+      <h1 id="page-title">Settings</h1>
+      <p class="page-subtitle">Manage your account preferences</p>
+    </div>
 
-    <section>
-      <h2>Tools I Am Using</h2>
-      <ul>
-        <li>HTML, CSS, and JavaScript</li>
-        <li>Node.js</li>
-        <li>Git</li>
-        <li>VS Code</li>
-        <li>Cursor AI</li>
-      </ul>
-    </section>
+    <!-- Toast notification container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
-    <section>
-      <h2>Goals</h2>
-      <ul>
-        <li>Learn core frontend development skills</li>
-        <li>Build small, polished web pages</li>
-        <li>Use AI responsibly to improve productivity</li>
-        <li>Commit changes regularly with clear messages</li>
-      </ul>
-    </section>
+    <form id="settings-form" novalidate>
+
+      <!-- ───── Profile Section ───── -->
+      <section class="card" id="profile-section">
+        <div class="card-header">
+          <div class="card-icon card-icon--purple">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A9 9 0 0112 15a9 9 0 016.879 2.804M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <div>
+            <h2>Profile Information</h2>
+            <p class="card-desc">Update your personal details</p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group" id="group-fullname">
+            <label for="fullname">Full Name <span class="required">*</span></label>
+            <div class="input-wrap">
+              <input type="text" id="fullname" name="fullname" placeholder="John Doe" autocomplete="name" required minlength="2" maxlength="50">
+              <span class="input-icon valid-icon" aria-hidden="true">✓</span>
+              <span class="input-icon error-icon" aria-hidden="true">!</span>
+            </div>
+            <span class="helper-text" id="fullname-error"></span>
+          </div>
+
+          <div class="form-group" id="group-email">
+            <label for="email">Email Address <span class="required">*</span></label>
+            <div class="input-wrap">
+              <input type="email" id="email" name="email" placeholder="john@example.com" autocomplete="email" required>
+              <span class="input-icon valid-icon" aria-hidden="true">✓</span>
+              <span class="input-icon error-icon" aria-hidden="true">!</span>
+            </div>
+            <span class="helper-text" id="email-error"></span>
+          </div>
+
+          <div class="form-group" id="group-username">
+            <label for="username">Username <span class="required">*</span></label>
+            <div class="input-wrap">
+              <input type="text" id="username" name="username" placeholder="johndoe" autocomplete="username" required minlength="3" maxlength="20" pattern="^[a-zA-Z0-9_]+$">
+              <span class="input-icon valid-icon" aria-hidden="true">✓</span>
+              <span class="input-icon error-icon" aria-hidden="true">!</span>
+            </div>
+            <span class="helper-text" id="username-error"></span>
+          </div>
+
+          <div class="form-group" id="group-phone">
+            <label for="phone">Phone Number</label>
+            <div class="input-wrap">
+              <input type="tel" id="phone" name="phone" placeholder="+1 (555) 000-0000" autocomplete="tel" pattern="^\+?[\d\s\-()]{7,15}$">
+              <span class="input-icon valid-icon" aria-hidden="true">✓</span>
+              <span class="input-icon error-icon" aria-hidden="true">!</span>
+            </div>
+            <span class="helper-text" id="phone-error"></span>
+          </div>
+
+          <div class="form-group full-width" id="group-bio">
+            <label for="bio">Bio</label>
+            <textarea id="bio" name="bio" rows="3" placeholder="Tell us about yourself…" maxlength="200"></textarea>
+            <span class="char-count"><span id="bio-count">0</span>/200</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───── Notifications Section ───── -->
+      <section class="card" id="notifications-section">
+        <div class="card-header">
+          <div class="card-icon card-icon--blue">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0a3 3 0 11-6 0"/></svg>
+          </div>
+          <div>
+            <h2>Notifications</h2>
+            <p class="card-desc">Choose what alerts you receive</p>
+          </div>
+        </div>
+
+        <div class="toggle-list">
+          <div class="toggle-row" id="toggle-email-notif">
+            <div>
+              <span class="toggle-label">Email Notifications</span>
+              <span class="toggle-desc">Receive updates via email</span>
+            </div>
+            <label class="switch" for="notif-email">
+              <input type="checkbox" id="notif-email" name="notif-email" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-row" id="toggle-sms-notif">
+            <div>
+              <span class="toggle-label">SMS Notifications</span>
+              <span class="toggle-desc">Get text message alerts</span>
+            </div>
+            <label class="switch" for="notif-sms">
+              <input type="checkbox" id="notif-sms" name="notif-sms">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-row" id="toggle-marketing">
+            <div>
+              <span class="toggle-label">Marketing Emails</span>
+              <span class="toggle-desc">Product news and offers</span>
+            </div>
+            <label class="switch" for="notif-marketing">
+              <input type="checkbox" id="notif-marketing" name="notif-marketing">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───── Password Section ───── -->
+      <section class="card" id="password-section">
+        <div class="card-header">
+          <div class="card-icon card-icon--emerald">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          </div>
+          <div>
+            <h2>Change Password</h2>
+            <p class="card-desc">Keep your account secure</p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group" id="group-current-password">
+            <label for="current-password">Current Password <span class="required">*</span></label>
+            <div class="input-wrap">
+              <input type="password" id="current-password" name="current-password" placeholder="••••••••" autocomplete="current-password" required minlength="8">
+              <button type="button" class="toggle-password" data-target="current-password" aria-label="Toggle password visibility">
+                <svg class="eye-open" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                <svg class="eye-closed" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M3 3l18 18"/></svg>
+              </button>
+            </div>
+            <span class="helper-text" id="current-password-error"></span>
+          </div>
+
+          <div class="form-group" id="group-new-password">
+            <label for="new-password">New Password <span class="required">*</span></label>
+            <div class="input-wrap">
+              <input type="password" id="new-password" name="new-password" placeholder="••••••••" autocomplete="new-password" required minlength="8">
+              <button type="button" class="toggle-password" data-target="new-password" aria-label="Toggle password visibility">
+                <svg class="eye-open" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                <svg class="eye-closed" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M3 3l18 18"/></svg>
+              </button>
+            </div>
+            <!-- Password strength meter -->
+            <div class="strength-meter" id="strength-meter">
+              <div class="strength-bar" id="strength-bar"></div>
+            </div>
+            <span class="strength-text" id="strength-text"></span>
+            <span class="helper-text" id="new-password-error"></span>
+          </div>
+
+          <div class="form-group" id="group-confirm-password">
+            <label for="confirm-password">Confirm New Password <span class="required">*</span></label>
+            <div class="input-wrap">
+              <input type="password" id="confirm-password" name="confirm-password" placeholder="••••••••" autocomplete="new-password" required minlength="8">
+              <button type="button" class="toggle-password" data-target="confirm-password" aria-label="Toggle password visibility">
+                <svg class="eye-open" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                <svg class="eye-closed" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M3 3l18 18"/></svg>
+              </button>
+            </div>
+            <span class="helper-text" id="confirm-password-error"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───── Actions ───── -->
+      <div class="form-actions" id="form-actions">
+        <button type="button" class="btn btn--ghost" id="btn-reset">Reset</button>
+        <button type="submit" class="btn btn--primary" id="btn-save">
+          <span class="btn-text">Save Changes</span>
+          <span class="btn-loader" aria-hidden="true"></span>
+        </button>
+      </div>
+    </form>
   </main>
 
   <footer>
-    <p>FlyRank Frontend AI Engineering Capstone</p>
+    <p>&copy; 2026 FlyRank Frontend AI Engineering Capstone</p>
   </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>
